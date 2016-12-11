@@ -1,0 +1,29 @@
+﻿Version 1.0.0.10
+Release Version
+
+Version 1.0.0.11
+- Fix not passing Album info - oops
+- Change to Null/Empty checking should now pass all strings empty if null (save null errors particularly on LCD/VFD Frontview)
+- If Duration not available - set to CurrentTimePosition
+
+Version 1.0.0.12
+- Add Option to escape accent characters and replace
+
+Version 1.0.0.14
+- Customised escaping accent characters with FrontViewForeignCharacters.txt file
+- If not present will use full set.
+
+Version 1.0.0.15
+- Deal correctly with quotes within Overview string.
+
+Version 1.0.0.16
+- Finally fix the cosmetic Jquery issues
+
+Version 1.0.0.17
+- Fix the NowPlaying not filled issue/Based on filename attribute.
+- Add VideoCodec passing, AudioProfile and Audio codec/& Channel number for iMON LCD Usage first off
+- Add Video Height information eg. 720p, 1080p etc.
+
+Version 1.0.0.18/1.0.0.19
+- Update corrupted catalog upload
+

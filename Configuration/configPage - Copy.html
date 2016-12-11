@@ -1,0 +1,179 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>FrontView</title>
+</head>
+<body>
+    <div data-role="page" class="page type-interior pluginConfigurationPage FrontViewConfigurationPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <form class="FrontViewConfigurationForm">
+
+                    <!-- comment
+            <ul class="ulForm" data-role="listview">
+                <li>
+                    <label for="txtFrontViewUserName">FrontView Username:</label>
+                    <select id="txtFrontViewUserName" data-mini="true"></select>
+                    <div class="fieldDescription">
+                        Emby Username used with FrontView (Defaults to FrontView)<br />
+                        SHOULD Use same username for FrontView Application, and Emby Client (ie.HT)<br />
+                        That monitoring/remote controlling with FrontView<br />
+                        e.g Setup new Emby User with name FrontView - give appropriate access rights<br />
+                        Run FrontView Application - Remote Connection to Emby Username FrontView to connect <br />
+                        Emby Client e.g Home Theatre - connect with Emby Username FrontView<br />
+                        and you are all good. <br />
+                        <br />
+                    </div>
+                </li>
+                -->
+
+                    <h4>Choose an Emby Client (Playback) device for FrontView+ to Monitor & Remote Control:</h4>
+                    <!--    <div data-inline="true" class="ui-bar-a">   -->
+
+                    <ul class="ulForm ui-listview" data-role="listview">
+                        <li data-role="list-divider" role="heading" class="ui-li-divider ui-bar-inherit ui-first-child">Devices
+                        </li>
+                        
+                        <li class="ui-li-static ui-body-inherit ui-first-child" data-inline="true">
+                            <select name="deviceName" id="deviceName"></select>
+                        </li>
+                        <li class="ui-li-static ui-body-inherit">
+                            <button type="button" class="btnRefresh ui-btn ui-icon-refresh ui-btn-icon-left ui-shadow ui-corner-all" data-icon="refresh" data-theme="a" id="refreshDeviceList">Refresh Devices</button>
+                        </li>
+
+
+                    </ul>
+
+                    <li>
+                        <label for="chkDebugLogging">Escape Foreign Characters ie. Remove ñ and replace with n   </label>
+                        <input type="checkbox" id="chkDebugLogging" data-mini="true" />
+                    </li>
+
+                    <li>
+                        <button type="submit" data-theme="b">Save</button>
+                        <button type="button" onclick="history.back();">Cancel</button>
+                    </li>
+                <!---    </ul> -->
+
+
+
+
+                </form>
+            </div>
+        </div>
+                
+                
+
+        
+
+
+        <script type="text/javascript">
+
+            var FrontViewConfigurationPage = {
+                pluginUniqueId: "9574ac10-bf23-49bc-1111-924f23cfa48f"
+            };
+
+            $('.FrontViewConfigurationPage').on('pageshow', function (event) {
+
+                Dashboard.hideLoadingMsg();
+
+                var page = this;
+
+
+                ApiClient.getPluginConfiguration(FrontViewConfigurationPage.pluginUniqueId).then(function (config) {
+
+                    $('#txtFrontViewUserName', page).val(config.FrontViewUserName || "");
+                    $('#txtPin', page).val(config.Pin || "");
+                    $('#chkDebugLogging', page).checked(config.EnableDebugLogging || false).checkboxradio("refresh");
+
+                    Dashboard.hideLoadingMsg();
+
+                    // Below Added 
+                     var listLength = $('#deviceName option').length;
+                     if (listLength > 0) {
+                         $('#deviceName').children().each(function () {
+                            $(this).remove();
+                        });
+                    }
+
+                    //Put the List of Devices in the Selection Box
+                   if (config.DevicesRunning) {
+                   config.DevicesRunning.forEach(function (c) {
+                       $("#deviceName", page).append('<option value="' + c.Id + '">' + c.Client + '  : Running on:  '+c.DeviceName+'</option>').selectmenu('refresh');
+                      
+                        });
+                   }
+
+                    ApiClient.getUsers().then(function (users) {
+                        $('#txtFrontViewUserName', page).html(users.map(function (user) {
+                            return '<option value="' + user.Id + '">' + user.Name + '</option>';
+                        })).selectmenu('refresh').trigger('change');
+                        $('#txtFrontViewUserName', page).text(config.FrontViewUserName || "");
+                    });
+
+
+                    //End of ADDED ==============
+
+                });
+            });
+
+            $('.FrontViewConfigurationForm').on('submit', function (e) {
+
+                Dashboard.showLoadingMsg();
+
+                var form = this;
+
+                ApiClient.getPluginConfiguration(FrontViewConfigurationPage.pluginUniqueId).then(function (config) {
+
+                    config.FrontViewUserName = $('#txtFrontViewUserName', form).text();
+                    config.Pin = $('#txtPin', form).val();
+                    config.EnableDebugLogging = $('#chkDebugLogging', form).checked();
+                    config.SelectedDeviceId = $('#deviceName option:selected').val();
+
+                    ApiClient.updatePluginConfiguration(FrontViewConfigurationPage.pluginUniqueId, config).then(Dashboard.processPluginConfigurationUpdateResult);
+                });
+
+                // Disable default form submission
+                return false;
+            });
+
+            // Changes Below: 
+
+
+                $('#refreshDeviceList', page).on('mouseup', function () {
+
+                    $('#refreshDeviceList').prop('disabled', true);
+
+                    Dashboard.showLoadingMsg();
+
+                    $('#deviceName').children().remove().end();
+
+                    $('#deviceName').selectmenu('refresh', true);
+
+                    ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+
+                        //Put the List of Devices in the Selection Box
+                        if (config.DevicesRunning) {
+                            config.DevicesRunning.forEach(function (c) {
+                                $("#deviceName", page).append('<option value="' + c.DeviceName + '">' + c.DeviceName + '</option>').selectmenu('refresh');
+                            });
+                        }
+
+                    });
+
+
+
+                    Dashboard.hideLoadingMsg();
+
+                    $('#refreshDeviceList').prop('disabled', false);
+
+                });
+
+
+        </script>
+
+    </div>
+
+</body>
+</html>

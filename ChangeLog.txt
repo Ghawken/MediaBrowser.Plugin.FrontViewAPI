@@ -27,3 +27,8 @@ Version 1.0.0.17
 Version 1.0.0.18/1.0.0.19
 - Update corrupted catalog upload
 
+Version 1.0.0.25
+- Changes to .net core compatibility 
+- changes to Nuget components
+- Changes to Iresetfulservice to Iservice
+- Compatible with 3.0.9000 Dev/Beta/Release Emby Server

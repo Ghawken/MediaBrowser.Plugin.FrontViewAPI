@@ -1,0 +1,15 @@
+C:\Users\Vwin7\Source\Repos\Emby.Plugins\MediaBrowser.Plugins.NextPvr\bin\Debug\MediaBrowser.Plugins.NextPvr.dll
+C:\Users\Vwin7\Source\Repos\Emby.Plugins\MediaBrowser.Plugins.NextPvr\bin\Debug\MediaBrowser.Plugins.NextPvr.pdb
+C:\Users\Vwin7\Source\Repos\Emby.Plugins\MediaBrowser.Plugins.NextPvr\bin\Debug\Interfaces.IO.dll
+C:\Users\Vwin7\Source\Repos\Emby.Plugins\MediaBrowser.Plugins.NextPvr\bin\Debug\MediaBrowser.Common.dll
+C:\Users\Vwin7\Source\Repos\Emby.Plugins\MediaBrowser.Plugins.NextPvr\bin\Debug\MediaBrowser.Controller.dll
+C:\Users\Vwin7\Source\Repos\Emby.Plugins\MediaBrowser.Plugins.NextPvr\bin\Debug\MediaBrowser.Model.dll
+C:\Users\Vwin7\Source\Repos\Emby.Plugins\MediaBrowser.Plugins.NextPvr\obj\Debug\MediaBrowser.Plugins.NextPvr.csprojResolveAssemblyReference.cache
+C:\Users\Vwin7\Source\Repos\Emby.Plugins\MediaBrowser.Plugins.NextPvr\obj\Debug\MediaBrowser.Plugins.NextPvr.dll
+C:\Users\Vwin7\Source\Repos\Emby.Plugins\MediaBrowser.Plugins.NextPvr\obj\Debug\MediaBrowser.Plugins.NextPvr.pdb
+C:\Users\Vwin7\Source\Repos\MediaBrowser.Plugins.Changing again\bin\Debug\ServiceStack.Interfaces.dll
+C:\Users\Vwin7\Source\Repos\MediaBrowser.Plugins.Changing again\obj\Debug\MediaBrowser.Plugins.NextPvr.csprojResolveAssemblyReference.cache
+C:\Users\Vwin7\Source\Repos\MediaBrowser.Plugins.Changing again\bin\Debug\MediaBrowser.Plugins.FrontView.dll
+C:\Users\Vwin7\Source\Repos\MediaBrowser.Plugins.Changing again\bin\Debug\MediaBrowser.Plugins.FrontView.pdb
+C:\Users\Vwin7\Source\Repos\MediaBrowser.Plugins.Changing again\obj\Debug\MediaBrowser.Plugins.FrontView.dll
+C:\Users\Vwin7\Source\Repos\MediaBrowser.Plugins.Changing again\obj\Debug\MediaBrowser.Plugins.FrontView.pdb

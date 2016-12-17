@@ -7,13 +7,11 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.ApiClient;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Net;
 
 //using MediaBrowser.Plugins.Yatse.Configuration;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
-using MediaBrowser.Model.Services;
+
 using MediaBrowser.Plugins.FrontView;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,12 +22,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-//using ServiceStack;
+using ServiceStack;
 
 namespace MediaBrowser.Plugins.FrontView.Api
 {
-    [Route("/FrontView", "GET", Summary = "Returns NowPlaying information for Selected Device in Settings")]
- //   [Api(Description = "Returns NowPlaying information for Selected Device in Settings")]
+    [Route("/FrontView", "GET")]
+    [Api(Description = "Returns NowPlaying information for Selected Device in Settings")]
     public class GetWeather : IReturn<FrontView.Api.YatseServerApi.ApiInfo>
     //public class GetWeather : IReturn<List<MediaBrowser.Model.Session.SessionInfoDto>>
     {
@@ -37,9 +35,19 @@ namespace MediaBrowser.Plugins.FrontView.Api
         public string Location { get; set; }
     }
     
-    [Route("/FrontView/Play/{Command}", "GET", Summary="Issues Play State to controller already Identified Player")]
-//    [Api(Description = "Issues Play State to controller identified Player")]
-
+    [Route("/FrontView/Play/{Command}", "POST", Summary="Issues Play State to controller already Identified Player")]
+    [Api(Description = "Issues Play State to controller identified Player")]
+    public class SendCommand : IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the position to seek to
+        /// </summary>
+        [ApiMember(Name = "SeekPositionTicks", Description = "The position to seek to.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public long? SeekPositionTicks { get; set; }
+        
+        [ApiMember(Name = "Command", Description = "The command to send - stop, pause, unpause, nexttrack, previoustrack, seek, fullscreen.", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public PlaystateCommand Command { get; set; }
+    }
 
     public static class Strings
     {
@@ -186,22 +194,12 @@ namespace MediaBrowser.Plugins.FrontView.Api
     }
     
     
-    public class SendCommand : IReturnVoid
-    {
-        /// <summary>
-        /// Gets or sets the position to seek to
-        /// </summary>
-        [ApiMember(Name = "SeekPositionTicks", Description = "The position to seek to.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public long? SeekPositionTicks { get; set; }
-        
-        [ApiMember(Name = "Command", Description = "The command to send - stop, pause, unpause, nexttrack, previoustrack, seek, fullscreen.", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public PlaystateCommand Command { get; set; }
-    }
 
 
 
 
-    public class YatseServerApi : IService
+
+    public class YatseServerApi : IRestfulService
     {
         private readonly IJsonSerializer _json;
         private readonly ISessionManager _sessionManager;
@@ -269,18 +267,18 @@ namespace MediaBrowser.Plugins.FrontView.Api
             
         }
 
-        public void Get(SendCommand request)
+        public void Post(SendCommand request)
         {
             var config = Plugin.Instance.Configuration;
            
             //Check Client Supports MediaControl
-            
+            /**
             if (CheckSupportsMediaControl()==false)
             {
                 _logger.Debug("FrontView+ -- Play Control -- Client does not support Media Control");
                 return;
             }
-
+            */
             var ClientSessionID = GetClientID();
             var SessionID = config.SelectedDeviceId;   //GetSessionID();
            // var UserID = GetUserID(); 

@@ -1,0 +1,7 @@
+C:\Users\Vwin7\Source\Repos\MediaBrowser.Plugins.Changing again\bin\Debug\ChangeLog.txt
+C:\Users\Vwin7\Source\Repos\MediaBrowser.Plugins.Changing again\bin\Debug\MediaBrowser.Plugins.FrontView.dll
+C:\Users\Vwin7\Source\Repos\MediaBrowser.Plugins.Changing again\bin\Debug\MediaBrowser.Plugins.FrontView.pdb
+C:\Users\Vwin7\Source\Repos\MediaBrowser.Plugins.Changing again\bin\Debug\ServiceStack.Interfaces.dll
+C:\Users\Vwin7\Source\Repos\MediaBrowser.Plugins.Changing again\obj\Debug\MediaBrowser.Plugins.FrontView.dll
+C:\Users\Vwin7\Source\Repos\MediaBrowser.Plugins.Changing again\obj\Debug\MediaBrowser.Plugins.FrontView.pdb
+C:\Users\Vwin7\Source\Repos\MediaBrowser.Plugins.Changing again\obj\Debug\MediaBrowser.Plugins.FrontView.csprojResolveAssemblyReference.cache

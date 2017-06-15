@@ -8,7 +8,6 @@ using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Net;
 
 //using MediaBrowser.Plugins.Yatse.Configuration;
 using MediaBrowser.Model.Serialization;
@@ -37,9 +36,41 @@ namespace MediaBrowser.Plugins.FrontView.Api
         public string Location { get; set; }
     }
     
-    [Route("/FrontView/Play/{Command}", "GET", Summary="Issues Play State to controller already Identified Player")]
-//    [Api(Description = "Issues Play State to controller identified Player")]
+    [Route("/FrontView/Play/{Command}", "POST", Summary="Issues Play State to controller already Identified Player")]
+    //    [Api(Description = "Issues Play State to controller identified Player")]
+    public class SendPlaystateCommand : IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the position to seek to
+        /// </summary>
+        [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Id { get; set; }
 
+  
+        [ApiMember(Name = "SeekPositionTicks", Description = "The position to seek to.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public long? SeekPositionTicks { get; set; }
+
+        [ApiMember(Name = "Command", Description = "The command to send - stop, pause, unpause, nexttrack, previoustrack, seek, fullscreen.", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public PlaystateCommand Command { get; set; }
+    }
+    [Route("/FrontView/Command/{Command}", "POST", Summary = "Issues a system command to a client")]
+    [Authenticated]
+    public class SendGeneralCommand : IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the command.
+        /// </summary>
+        /// <value>The play command.</value>
+        [ApiMember(Name = "Command", Description = "The command to send.", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Command { get; set; }
+    }
 
     public static class Strings
     {
@@ -186,24 +217,13 @@ namespace MediaBrowser.Plugins.FrontView.Api
     }
     
     
-    public class SendCommand : IReturnVoid
-    {
-        /// <summary>
-        /// Gets or sets the position to seek to
-        /// </summary>
-        [ApiMember(Name = "SeekPositionTicks", Description = "The position to seek to.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public long? SeekPositionTicks { get; set; }
-        
-        [ApiMember(Name = "Command", Description = "The command to send - stop, pause, unpause, nexttrack, previoustrack, seek, fullscreen.", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public PlaystateCommand Command { get; set; }
-    }
 
 
 
 
     public class YatseServerApi : IService
     {
-        private readonly IJsonSerializer _json;
+      //  private readonly IJsonSerializer _json;
         private readonly ISessionManager _sessionManager;
         private readonly IUserManager _userManager;
         private readonly ILogger _logger;
@@ -269,46 +289,60 @@ namespace MediaBrowser.Plugins.FrontView.Api
             
         }
 
-        public void Get(SendCommand request)
+        public void Post(SendPlaystateCommand request)
         {
             var config = Plugin.Instance.Configuration;
-           
+
             //Check Client Supports MediaControl
-            
-            if (CheckSupportsMediaControl()==false)
-            {
-                _logger.Debug("FrontView+ -- Play Control -- Client does not support Media Control");
-                return;
-            }
+
+            // if (CheckSupportsMediaControl()==false)
+            //   {
+            //       _logger.Debug("FrontView+ -- Play Control -- Client does not support Media Control");
+            //      return;
+            //  }
 
             var ClientSessionID = GetClientID();
-            var SessionID = config.SelectedDeviceId;   //GetSessionID();
-           // var UserID = GetUserID(); 
 
-            _logger.Debug("--- FrontView+ Play Command: Command Details: " + request.Command.ToString());
-        //    _logger.Debug("--- Yatse Play Command: UserID Details: " + UserID);  
 
+            var SessionID = config.SelectedDeviceId;
+
+
+
+            _logger.Debug("--- FrontView+ Remote Command: Command Details: " + request.Command.ToString());
 
 
             var command = new PlaystateRequest
             {
                 Command = request.Command,
-                SeekPositionTicks = request.SeekPositionTicks
-             //   ControllingUserId = UserID        
+                SeekPositionTicks = 0
+                //   ControllingUserId = UserID        
             };
 
-            _logger.Debug("--- FrontView+ Play Command: Command Sent: "+request.Command+" Session Id: "+SessionID+" Client Requesting ID: "+ClientSessionID);
-
-
-           // var task = _sessionController.SendPlaystateCommand(command, CancellationToken.None);
-
+            _logger.Debug("--- FrontView+ PlayStateCommand: Command Sent: " + request.Command + " Session Id: " + SessionID + " Client Requesting ID: " + ClientSessionID);
             var task = _sessionManager.SendPlaystateCommand(SessionID, ClientSessionID, command, CancellationToken.None);
             Task.WaitAll(task);
-            
-            //GetInfo();
-            //return "";
-            //string result = GetInfo();
-            //return result;
+
+        }
+
+        public void Post(SendGeneralCommand request)
+        {
+            var config = Plugin.Instance.Configuration;
+            var ClientSessionID = GetClientID();
+            var SessionID = config.SelectedDeviceId;
+            var UserID = GetUserIDNew();
+
+            var command = new GeneralCommand
+            {
+                    Name = request.Command,
+                    ControllingUserId = UserID.HasValue ? UserID.Value.ToString("N") : null
+            };
+            _logger.Debug("--- FrontView+ General Command: Command Sent: " + request.Command + " Session Id: " + SessionID + " Client Requesting ID: " + ClientSessionID);
+            var task2 = _sessionManager.SendGeneralCommand(SessionID, ClientSessionID, command, CancellationToken.None);
+
+            Task.WaitAll(task2);
+         
+
+
         }
 
 
@@ -348,19 +382,41 @@ namespace MediaBrowser.Plugins.FrontView.Api
         public string GetClientID()
         {
             var config = Plugin.Instance.Configuration;
+            
             foreach (var session in _sessionManager.Sessions)
             {
+
+              //  _logger.Debug("FrontView+ --- GetClientID ---- Checking.. Session.Id:" + session.Id + " UserId: " + session.UserId + "::::: to Match:" + config.SelectedDeviceId);
                 if (session.Id == config.SelectedDeviceId)
                 {
-                    _logger.Debug("FrontView+ -- GetClientID -- Run -- Returning Session ID" + session.Id + ": DeviceName Name:" + session.DeviceName);
-                    _logger.Debug("----- FrontView+ --- GetClientID ---- Checking SupportsMediaControl: " + session.SupportsMediaControl );
+                    _logger.Debug("FrontView+ --- GetClientID -- Run -- Returning Session ID" + session.Id + ": DeviceName Name:" + session.DeviceName);
+                    _logger.Debug("FrontView+ --- GetClientID ---- Checking SupportsMediaControl: " + session.SupportsMediaControl );
+                 //   _logger.Debug("FrontView+ --- GetClientID ---- Checking session.UserID: " + session.UserId);
                     return session.Id;
 
                 }
             }
             return "";
         }
+        public Guid? GetUserIDNew()
+        {
+            var config = Plugin.Instance.Configuration;
 
+            foreach (var session in _sessionManager.Sessions)
+            {
+
+                //  _logger.Debug("FrontView+ --- GetClientID ---- Checking.. Session.Id:" + session.Id + " UserId: " + session.UserId + "::::: to Match:" + config.SelectedDeviceId);
+                if (session.Id == config.SelectedDeviceId)
+                {
+                    _logger.Debug("FrontView+ --- GetClientID -- Run -- Returning Session ID" + session.Id + ": UserID:" + session.UserId + ":UserName:"+session.UserName);
+                    _logger.Debug("FrontView+ --- GetClientID ---- Checking SupportsMediaControl: " + session.SupportsMediaControl);
+                    //   _logger.Debug("FrontView+ --- GetClientID ---- Checking session.UserID: " + session.UserId);
+                    return session.UserId;
+
+                }
+            }
+            return null;
+        }
         public bool CheckSupportsMediaControl()
         {
             var config = Plugin.Instance.Configuration;
@@ -528,7 +584,7 @@ namespace MediaBrowser.Plugins.FrontView.Api
             var NewData = "";
 
 
-            
+
 
 
 
@@ -536,13 +592,13 @@ namespace MediaBrowser.Plugins.FrontView.Api
             {
                 if (session.Id == config.SelectedDeviceId)
                 {
-                   
+
                     // Should select Running Client with Username as configPage - defaults to Yatse
                     // then make sure it selects another client other than Yatse app instance.
                     // Does so by using ConfigID - which is set in Emby.Remote Yatse Codebase
                     if (session.PlayState != null)
                     {
-         
+
                         InfotoSend.TimePosition = session.PlayState.PositionTicks;
                         InfotoSend.Volume = session.PlayState.VolumeLevel;
                         InfotoSend.IsMuted = session.PlayState.IsMuted;
@@ -551,16 +607,18 @@ namespace MediaBrowser.Plugins.FrontView.Api
 
 
                     }
+                    // delete below as well
+
                     if (session.NowPlayingItem != null)
                     {
-                      
+
                         InfotoSend.ID = string.IsNullOrEmpty(session.NowPlayingItem.Id) ? "" : session.NowPlayingItem.Id;
-                        
-                        
+
+
 
 
                         var AudioInfo = session.NowPlayingItem.MediaStreams.Where(item => item.Type == MediaBrowser.Model.Entities.MediaStreamType.Audio).FirstOrDefault();
-                        
+
                         var VideoInfo = session.NowPlayingItem.MediaStreams.Where(item => item.Type == MediaBrowser.Model.Entities.MediaStreamType.Video).FirstOrDefault();
 
                         if (AudioInfo != null)
@@ -586,12 +644,19 @@ namespace MediaBrowser.Plugins.FrontView.Api
 
 
 
-                        foreach (var artist in session.NowPlayingItem.Artists)
+                        if (session.NowPlayingItem.Artists != null && !session.NowPlayingItem.Artists.Any())
                         {
-                            InfotoSend.Artist = CheckDiacritics(artist.ToString());
+                            foreach (var artist in session.NowPlayingItem.Artists)
+                            {
+                                if (artist != null)
+                                {
+                                    InfotoSend.Artist = CheckDiacritics(artist.ToString());
+                                    
+                                }
+                            }
                         }
 
-                        if (session.NowPlayingItem.PremiereDate.HasValue)
+                        if (session.NowPlayingItem.PremiereDate.HasValue  && session.NowPlayingItem.PremiereDate != null)
                         {
                             InfotoSend.AirDate = session.NowPlayingItem.PremiereDate;
                         }
@@ -600,13 +665,20 @@ namespace MediaBrowser.Plugins.FrontView.Api
                             InfotoSend.AirDate = new DateTime(1900, 1, 1);
                         }
 
+
+
+
+
+
                         InfotoSend.MediaType = string.IsNullOrEmpty(session.NowPlayingItem.Type) ? "" : session.NowPlayingItem.Type;
-                        InfotoSend.PrimaryItemId = string.IsNullOrEmpty(session.NowPlayingItem.PrimaryImageItemId) ? "" : session.NowPlayingItem.PrimaryImageItemId;
+
+                        InfotoSend.PrimaryItemId = string.IsNullOrEmpty(session.NowPlayingItem.ParentPrimaryImageItemId) ? "" : session.NowPlayingItem.ParentPrimaryImageItemId;
+
                         InfotoSend.EpisodeNumber = (session.NowPlayingItem.IndexNumber > 0) ? session.NowPlayingItem.IndexNumber : 0;
                         InfotoSend.SeasonNumber = (session.NowPlayingItem.ParentIndexNumber >0) ? session.NowPlayingItem.ParentIndexNumber : 0;
                         InfotoSend.Title = string.IsNullOrEmpty(session.NowPlayingItem.Name) ? "" : CheckDiacritics(session.NowPlayingItem.Name);
                         InfotoSend.ShowTitle = string.IsNullOrEmpty(session.NowPlayingItem.SeriesName) ? "" : CheckDiacritics(session.NowPlayingItem.SeriesName);
-                        InfotoSend.BackdropItemId = string.IsNullOrEmpty(session.NowPlayingItem.BackdropItemId) ? "" : session.NowPlayingItem.BackdropItemId;
+                        InfotoSend.BackdropItemId = string.IsNullOrEmpty(session.NowPlayingItem.ParentBackdropItemId) ? "" : session.NowPlayingItem.ParentBackdropItemId;
                         InfotoSend.Year = (session.NowPlayingItem.ProductionYear > 0) ? session.NowPlayingItem.ProductionYear : 1900;
                         InfotoSend.Album = string.IsNullOrEmpty(session.NowPlayingItem.Album) ? "" : CheckDiacritics(session.NowPlayingItem.Album);
                         
@@ -676,6 +748,7 @@ namespace MediaBrowser.Plugins.FrontView.Api
                      
 
                     }
+    
                 }
 
             }
@@ -689,10 +762,6 @@ namespace MediaBrowser.Plugins.FrontView.Api
             
             NewData = _jsonSerializer.SerializeToString(InfotoSend);
                    
-
-
-
-
             return NewData;
 
         }

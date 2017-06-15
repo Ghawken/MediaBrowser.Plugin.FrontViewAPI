@@ -672,7 +672,7 @@ namespace MediaBrowser.Plugins.FrontView.Api
 
                         InfotoSend.MediaType = string.IsNullOrEmpty(session.NowPlayingItem.Type) ? "" : session.NowPlayingItem.Type;
 
-                        InfotoSend.PrimaryItemId = string.IsNullOrEmpty(session.NowPlayingItem.ParentPrimaryImageItemId) ? "" : session.NowPlayingItem.ParentPrimaryImageItemId;
+                        InfotoSend.PrimaryItemId = string.IsNullOrEmpty(session.NowPlayingItem.Id) ? "" : session.NowPlayingItem.Id;
 
                         InfotoSend.EpisodeNumber = (session.NowPlayingItem.IndexNumber > 0) ? session.NowPlayingItem.IndexNumber : 0;
                         InfotoSend.SeasonNumber = (session.NowPlayingItem.ParentIndexNumber >0) ? session.NowPlayingItem.ParentIndexNumber : 0;
